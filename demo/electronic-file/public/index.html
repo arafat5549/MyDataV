@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <title>DATAV-DEMO</title>
+     <link rel="stylesheet" href="css/ol.css" type="text/css">
+     <link rel="stylesheet" href="css/ol3-layerswitcher.css" type="text/css">
+     <link rel="stylesheet" href="css/style.css" type="text/css">
+
+    <script src="./js/jquery-2.2.3.min.js"></script>
+    <script src="./js/jquery-migrate-1.2.1.js"></script>
+    <script src="./js/inject_ol_cesium.js"></script>
+    <script src="./js/ol3-layerswitcher.js"></script>
+    
+  </head>
+  <body>
+    <noscript>
+      <strong>We're sorry but manage-desk doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app">
+    </div>
+    
+    <!-- built files will be auto injected -->
+    <script src="./js/transform.js"></script>
+    <script src="./js/unslider.js"></script>
+    <script type="text/javascript">
+      window.onload=function(){ 
+         var tdtSatelliteLayer = new ol.layer.Tile({
+            title: "天地图卫星影像",
+            source: new ol.source.XYZ({
+                url: 'http://t3.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}'
+            })
+        });
+
+
+        var tiandituLayer = new ol.layer.Tile({
+            title: "天地图",
+            type: 'base',
+            visible: true,
+            source: new ol.source.XYZ({
+                url: "http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}",
+            })
+        });
+
+        var tdtTextLayer = new ol.layer.Tile({
+            title: "天地图标注",
+            source: new ol.source.XYZ({
+                url: "http://t3.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}",
+            })
+        });
+
+        var map = new ol.Map({
+            layers: [
+                
+            ],
+            view: new ol.View({
+                center: ol.proj.transform([119.73, 25.55], 'EPSG:4326', 'EPSG:3857'), // 定义地图显示中心于经度0度，纬度0度处
+                zoom: 11,
+                minZoom: 2,
+                maxZoom: 22
+            }),
+            target: 'map', //'map'
+            controls: ol.control.defaults({
+                attributionOptions: ({
+
+                    collapsible: false
+
+                })
+            })
+        });
+        // 全屏控件
+        map.addControl(new ol.control.FullScreen({}));
+        //添加比例尺控件
+        // map.addControl(new ol.control.ScaleLine()); 
+        //添加缩放控件
+        map.addControl(new ol.control.Zoom());
+        //添加缩放滑动控件
+        // map.addControl(new ol.control.ZoomSlider());
+        //添加缩放到当前视图滑动控件
+        // map.addControl(new ol.control.ZoomToExtent());
+        // map.addControl(new ol.control.OverviewMap({}));
+        var tileLayer = new ol.layer.Tile({
+            source: new ol.source.OSM()
+        });
+        map.addLayer(tileLayer);
+        //map.addLayer(tdtSatelliteLayer);
+        var mousePositionControl = new ol.control.MousePosition({
+            coordinateFormat: ol.coordinate.createStringXY(4),
+            projection: "EPSG:4326",
+            className: "custom-mouse-position",
+            target: document.getElementById("mouse-position"),
+            undefinedHTML: "&nbsp"
+        });
+        map.addControl(mousePositionControl);
+
+
+        addKml(map,'resource/pingtan.json')
+        addKml(map,'resource/guanpingtown.kml')
+        addHeatMap(map,'resource/2012_Earthquakes_Mag5.kml')
+        
+    } 
+
+    function addKml(map,source,zidx=99996){
+      console.log("src="+source)
+      var vector1 = null; 
+      if(source.endsWith('kml')){
+        vector1 =  new ol.layer.Vector({
+            source: new ol.source.Vector({
+              url: source, 
+              projection:'EPSG:3857',
+              format: new ol.format.KML({
+               // extractStyles: false,
+                // writeStyles:true,
+                defaultStyle:new  ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                  // color: 'rgba(251, 177, 0, 1)',
+                  width: 2
+                 })
+                }),
+              }),
+            })
+          });
+      }else{
+        vector1 =  new ol.layer.Vector({
+            source: new ol.source.Vector({
+              url: source, 
+              projection:'EPSG:3857',
+              format: new ol.format.GeoJSON(),
+            }),
+            style: function (feature, resolution) {
+                    style = new ol.style.Style({
+                      stroke: new ol.style.Stroke({
+                            color: "red",
+                            //color: 'rgba(251, 177, 0, 1)',
+                            width: 2
+                        }),
+                    });
+                    return [style]
+                }
+          });
+      }
+       
+      map.addLayer(vector1)
+      vector1.setZIndex(zidx);
+    }
+
+    function addHeatMap(map,source,zidx=99996){
+      var vector = new ol.layer.Heatmap({
+        source: new ol.source.Vector({
+          url: source,
+          format: new ol.format.KML({
+            extractStyles: false
+          })
+        }),
+        //blur: parseInt(blur.value, 10),
+        //radius: parseInt(radius.value, 10),
+        weight: function(feature) {
+          var name = feature.get('name');
+          var magnitude = parseFloat(name.substr(2));
+          console.log("name="+name+","+magnitude)
+          return magnitude;
+        }
+      });
+
+      map.addLayer(vector)
+      vector.setZIndex(zidx);
+    }
+
+    function addIconLayer(){
+      
+    }
+    </script>
+  </body>
+</html>

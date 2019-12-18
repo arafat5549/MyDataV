@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+
+<Placemark>
+    <styleUrl>#info_rutas_arg</styleUrl>
+    <ExtendedData>
+        <Data name="marker-color">
+            <value>#7e7e7e</value>
+        </Data>
+        <Data name="marker-size">
+            <value>medium</value>
+        </Data>
+        <Data name="marker-symbol">
+            <value>circle</value>
+        </Data>
+    </ExtendedData>
+    <Point><coordinates>119.68162536621092,25.498446278066588</coordinates></Point>
+</Placemark>
+</Document>
+</kml>
